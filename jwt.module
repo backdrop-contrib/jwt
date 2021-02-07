@@ -1,22 +1,46 @@
 <?php
 
+function jwt_permission() {
+    return array(
+        'administer_jwt' => array(
+            'title' => t('Administer JASON Web Tokens.')
+        ),
+    );
+}
+
 /**
  * Implements hook_menu()
  */
 function jwt_menu() {
+    $items = array();
     $items['jwt/config'] = array(
-        'page_callback' => 'jwt_admin_page',
-        'access_arguments' =>  array('access administration pages'),
         'title' => 'Administer JWT Tokens',
         'description' => 'Page to set up and administer site-wide JWT tokens',
+        'page callback' => 'backdrop_get_form',
+        'page arguments' => array('jwt_configuration_form'),
+        'access arguments' =>  array('administer_jwt'),
     );
     return $items;
 }
 
 /**
+ * Implements hook_form
  * JWT Admin Page
  */
-function jwt_admin_page() {
-    $markup = "<h1>Hello JWT</h1>";
-    return $markup;
+function jwt_configuration_form($form, &$form_state) {
+    $form['#attached']['js'][] = array(
+        'type' => 'file',
+        'data' => backdrop_get_path('module', 'jwt') . '/test.js',
+    );
+
+    $form['jwt_secret'] = array(
+        '#type' => 'textfield',
+        '#size' => '32',
+    );
+
+    $form['generate_secret'] = array(
+        '#type' => 'button',
+        '#attributes' => array('onclick' => 'testAlert();return false'),
+    );
+    return $form;
 }
