@@ -1,0 +1,4 @@
+name = Jason Web Tokens
+description = Create and verify Jason Web Tokens
+version = BACKDROP_VERSION
+backdrop = 1.x

@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * Implements hook_menu()
+ */
+function jwt_menu() {
+    $items['jwt/config'] = array(
+        'page_callback' => 'jwt_admin_page',
+        'access_arguments' =>  array('access administration pages'),
+        'title' => 'Administer JWT Tokens',
+        'description' => 'Page to set up and administer site-wide JWT tokens',
+    );
+    return $items;
+}
+
+/**
+ * JWT Admin Page
+ */
+function jwt_admin_page() {
+    $markup = "<h1>Hello JWT</h1>";
+    return $markup;
+}
