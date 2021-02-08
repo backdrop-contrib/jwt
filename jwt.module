@@ -13,7 +13,7 @@ function jwt_permission() {
  */
 function jwt_menu() {
     $items = array();
-    $items['jwt/config'] = array(
+    $items['admin/config/administration/jwt'] = array(
         'title' => 'Administer JWT Tokens',
         'description' => 'Page to set up and administer site-wide JWT tokens',
         'page callback' => 'backdrop_get_form',
@@ -30,17 +30,31 @@ function jwt_menu() {
 function jwt_configuration_form($form, &$form_state) {
     $form['#attached']['js'][] = array(
         'type' => 'file',
-        'data' => backdrop_get_path('module', 'jwt') . '/test.js',
+        'data' => backdrop_get_path('module', 'jwt') . '/admin-scripts.js',
     );
 
     $form['jwt_secret'] = array(
         '#type' => 'textfield',
         '#size' => '32',
+        '#title' => 'Secret Key',
     );
 
     $form['generate_secret'] = array(
         '#type' => 'button',
+        '#value' => 'Generate Secret Key',
         '#attributes' => array('onclick' => 'testAlert();return false'),
     );
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#title' => 'Save',
+    );
     return $form;
+}
+
+/** JWT Form Submit Handler
+ * 
+ */
+function jwt_configuration_form_submit($form, &$form_state) {
+    
 }

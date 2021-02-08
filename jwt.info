@@ -1,4 +1,4 @@
-name = Jason Web Tokens
-description = Create and verify Jason Web Tokens
+name = JWT
+description = Create and verify Jason Web Tokens in Backdrop
 version = BACKDROP_VERSION
 backdrop = 1.x
