@@ -28,6 +28,8 @@ function jwt_menu() {
  * JWT Admin Page
  */
 function jwt_configuration_form($form, &$form_state) {
+    $cur_secret = state_get('jwt secret');
+
     $form['#attached']['js'][] = array(
         'type' => 'file',
         'data' => backdrop_get_path('module', 'jwt') . '/admin-scripts.js',
@@ -37,6 +39,8 @@ function jwt_configuration_form($form, &$form_state) {
         '#type' => 'textfield',
         '#size' => '32',
         '#title' => 'Secret Key',
+        '#default_value' => $cur_secret,
+        '#maxlength' => '1024',
     );
 
     $form['generate_secret'] = array(
@@ -47,7 +51,7 @@ function jwt_configuration_form($form, &$form_state) {
 
     $form['submit'] = array(
         '#type' => 'submit',
-        '#title' => 'Save',
+        '#value' => 'Save',
     );
     return $form;
 }
@@ -56,5 +60,49 @@ function jwt_configuration_form($form, &$form_state) {
  * 
  */
 function jwt_configuration_form_submit($form, &$form_state) {
+    try{
+        $secret = $form_state['values']['jwt_secret'];
+        state_set("jwt secret", $secret);
+        backdrop_set_message(t('Successfully set JWT secret.'), 'status');
+    } catch( exception $e ) {
+        backdrop_set_message(t('Could not set jwt secret: '.$e->getMessage()), 'error');
+        watchdog('jwt', $e, array(), WATCHDOG_ERROR);
+    }
+}
+
+function base64UrlEncode($text) {
+    return str_replace(
+        ['+', '/', '='],
+        ['-', '_', ''],
+        base64_encode($text)
+    );
+}
+
+function encode_jwt($payload_data) {
+    $secret_key = state_get('jwt secret');
+    //Create token header
+    $header = json_encode([
+        'typ' => 'JWT',
+        'alg' => 'HS256',
+    ]);
+
+    // Create token payload
+    $payload = json_encode($payload_data);
+
+    //Encode Header
+    $base64UrlHeader = base64UrlEncode($header);
+
+    //Encode Payload
+    $base64UrlPayload = base64UrlEncode($payload);
+
+    //Create Signature
+    $signature = hash_hmac('sha256', $base64UrlHeader . '.' . $base64UrlPayload, $secret, true);
+
+    //Encode Signature to Base64Url String
+    $base64UrlSignature = base64UrlEncode($signature);
+
+    //Create JWT
+    $jwt = $base64UrlHeader . '.' . $base64UrlPayload . '.' . $base64UrlSignature;
     
+    return $jwt;
 }
