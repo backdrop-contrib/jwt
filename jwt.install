@@ -1,0 +1,11 @@
+<?php
+
+function jwt_install() {
+    generate_secret();
+}
+
+function generate_secret() {
+    $secret = bin2hex(random_bytes(32));
+    state_set("jwt secret", $secret);
+    dpm($secret, "jwt");
+}
