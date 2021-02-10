@@ -12,7 +12,6 @@ function testAlert() {
             ["encrypt", "decrypt"]
           ).then(key => {
               window.crypto.subtle.exportKey('jwk', key.privateKey).then(privateKey=>{
-
                   document.getElementById('edit-jwt-secret').value = privateKey.d
             })
           });
