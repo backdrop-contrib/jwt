@@ -1,4 +1,5 @@
-# JWT for Backdrop
+# JWT
+## JSON Web Tokens for Backdrop CMS
 
 This module adds the ability to create and authenticate JSON Web Tokens through global PHP functions. It is intended to facilitate developers wishing to integrate JSON Web Tokens into their projects.
 
