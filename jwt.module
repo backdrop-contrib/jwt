@@ -64,8 +64,8 @@ function jwt_configuration_form($form, &$form_state) {
     return $form;
 }
 
-/** JWT Form Submit Handler
- * 
+/** 
+ * JWT Form Submit Handler
  */
 function jwt_configuration_form_submit($form, &$form_state) {
     $timeout = $form_state['values']['default_timeout'];
@@ -94,25 +94,25 @@ function encode_jwt($payload_data, $expiration=false) {
     $expiration = $expiration ? (int) $expiration : (int) state_get('jwt timeout');
     $payload_data['expiration'] = $current_time + $expiration;
     
-    //Create token header
+    // Create token header.
     $header = json_encode([
         'typ' => 'JWT',
         'alg' => 'HS256',
     ]);
 
-    // Create token payload
+    // Create token payload.
     $payload = json_encode($payload_data);
 
-    //Encode Header
+    // Encode Header.
     $base64_url_header = _jwt_base64_url_encode($header);
 
-    //Encode Payload
+    // Encode Payload.
     $base64_url_payload = _jwt_base64_url_encode($payload);
 
-    //Encode Signature
+    // Encode Signature.
     $base64_url_signature = _jwt_encode_signature($base64_url_header, $base64_url_payload);
 
-    //Create JWT
+    // Create JWT.
     $jwt = $base64_url_header . '.' . $base64_url_payload . '.' . $base64_url_signature;
     
     return $jwt;
@@ -121,10 +121,10 @@ function encode_jwt($payload_data, $expiration=false) {
 function _jwt_encode_signature($base64_url_header, $base64_url_payload) {
     $secret_key = state_get('jwt secret');
 
-    //Create Signature
+    // Create Signature.
     $signature = hash_hmac('sha256', $base64_url_header . '.' . $base64_url_payload, $secret_key, true);
 
-    //Encode Signature to Base64Url String
+    // Encode Signature to Base64Url String.
     return _jwt_base64_url_encode($signature);
 }
 
@@ -142,17 +142,17 @@ function validate_jwt($jwt) {
     $signature = $token_parts[2];
     $expiration_time = $decoded_payload->expiration;
 
-    //Check expiration time
+    // Check expiration time.
     if( $expiration_time < $current_time ) {
         return false;
     }
 
-    // Build Signature
+    // Build Signature.
     $base64_url_header = _jwt_base64_url_encode($header);
     $base64_url_payload = _jwt_base64_url_encode($payload);
     $base64_url_signature = _jwt_encode_signature($base64_url_header, $base64_url_payload);
 
-    // Verify Signature
+    // Verify Signature.
     $valid_signature = ( $base64_url_signature === $signature );
 
     if(!$valid_signature){
