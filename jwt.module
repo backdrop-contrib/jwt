@@ -3,7 +3,7 @@
 function jwt_permission() {
     return array(
         'administer_jwt' => array(
-            'title' => t('Administer JASON Web Tokens.')
+            'title' => t('Administer JSON Web Tokens.')
         ),
     );
 }
@@ -54,7 +54,7 @@ function jwt_configuration_form($form, &$form_state) {
         '#type' => 'textfield',
         '#size' => '32',
         '#default_value' => $timeout,
-        '#title' => "Default Timeout (in seconds?)",
+        '#title' => "Default Timeout (in seconds)",
     );
 
     $form['submit'] = array(
@@ -91,7 +91,7 @@ function _jwt_base64_url_encode($text) {
 
 function encode_jwt($payload_data, $expiration=false) {
     $current_time = time();
-    $expiration = $expiration ? $expiration : state_get('jwt timeout');
+    $expiration = $expiration ? (int) $expiration : (int) state_get('jwt timeout');
     $payload_data['expiration'] = $current_time + $expiration;
     
     //Create token header
