@@ -156,10 +156,8 @@ function validate_jwt($jwt) {
     $valid_signature = ( $base64_url_signature === $signature );
 
     if(!$valid_signature){
-        backdrop_set_message("Invalid Signature");
         return false;
     } else {
-        backdrop_set_message("Valid Signature");
         return $decoded_payload;
     }
 }
