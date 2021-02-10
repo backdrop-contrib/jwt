@@ -29,6 +29,7 @@ function jwt_menu() {
  */
 function jwt_configuration_form($form, &$form_state) {
     $cur_secret = state_get('jwt secret');
+    $timeout = state_get('jwt timeout');
 
     $form['#attached']['js'][] = array(
         'type' => 'file',
@@ -49,6 +50,13 @@ function jwt_configuration_form($form, &$form_state) {
         '#attributes' => array('onclick' => 'testAlert();return false'),
     );
 
+    $form['default_timeout'] = array(
+        '#type' => 'textfield',
+        '#size' => '32',
+        '#default_value' => $timeout,
+        '#title' => "Default Timeout (in seconds?)",
+    );
+
     $form['submit'] = array(
         '#type' => 'submit',
         '#value' => 'Save',
@@ -60,6 +68,9 @@ function jwt_configuration_form($form, &$form_state) {
  * 
  */
 function jwt_configuration_form_submit($form, &$form_state) {
+    $timeout = $form_state['values']['default_timeout'];
+ 
+    state_set('jwt timeout', $timeout);
     try{
         $secret = $form_state['values']['jwt_secret'];
         state_set("jwt secret", $secret);
@@ -70,7 +81,7 @@ function jwt_configuration_form_submit($form, &$form_state) {
     }
 }
 
-function base64UrlEncode($text) {
+function _jwt_base64_url_encode($text) {
     return str_replace(
         ['+', '/', '='],
         ['-', '_', ''],
@@ -78,8 +89,11 @@ function base64UrlEncode($text) {
     );
 }
 
-function encode_jwt($payload_data) {
-    $secret_key = state_get('jwt secret');
+function encode_jwt($payload_data, $expiration=false) {
+    $current_time = time();
+    $expiration = $expiration ? $expiration : state_get('jwt timeout');
+    $payload_data['expiration'] = $current_time + $expiration;
+    
     //Create token header
     $header = json_encode([
         'typ' => 'JWT',
@@ -90,19 +104,62 @@ function encode_jwt($payload_data) {
     $payload = json_encode($payload_data);
 
     //Encode Header
-    $base64UrlHeader = base64UrlEncode($header);
+    $base64_url_header = _jwt_base64_url_encode($header);
 
     //Encode Payload
-    $base64UrlPayload = base64UrlEncode($payload);
+    $base64_url_payload = _jwt_base64_url_encode($payload);
 
-    //Create Signature
-    $signature = hash_hmac('sha256', $base64UrlHeader . '.' . $base64UrlPayload, $secret, true);
-
-    //Encode Signature to Base64Url String
-    $base64UrlSignature = base64UrlEncode($signature);
+    //Encode Signature
+    $base64_url_signature = _jwt_encode_signature($base64_url_header, $base64_url_payload);
 
     //Create JWT
-    $jwt = $base64UrlHeader . '.' . $base64UrlPayload . '.' . $base64UrlSignature;
+    $jwt = $base64_url_header . '.' . $base64_url_payload . '.' . $base64_url_signature;
     
     return $jwt;
+}
+
+function _jwt_encode_signature($base64_url_header, $base64_url_payload) {
+    $secret_key = state_get('jwt secret');
+
+    //Create Signature
+    $signature = hash_hmac('sha256', $base64_url_header . '.' . $base64_url_payload, $secret_key, true);
+
+    //Encode Signature to Base64Url String
+    return _jwt_base64_url_encode($signature);
+}
+
+function validate_jwt($jwt) {
+    if(!$jwt){
+        watchdog("JWT", "JWT Verification Failed: No token passed to validate function.", array(), WATCHDOG_ALERT);
+        return false;
+    }
+
+    $current_time = time();
+    $token_parts = explode('.', $jwt);
+    $header = base64_decode($token_parts[0]);
+    $payload = base64_decode($token_parts[1]);
+    $decoded_payload = json_decode($payload);
+    $signature = $token_parts[2];
+    $expiration_time = $decoded_payload->expiration;
+
+    //Check expiration time
+    if( $expiration_time < $current_time ) {
+        return false;
+    }
+
+    // Build Signature
+    $base64_url_header = _jwt_base64_url_encode($header);
+    $base64_url_payload = _jwt_base64_url_encode($payload);
+    $base64_url_signature = _jwt_encode_signature($base64_url_header, $base64_url_payload);
+
+    // Verify Signature
+    $valid_signature = ( $base64_url_signature === $signature );
+
+    if(!$valid_signature){
+        backdrop_set_message("Invalid Signature");
+        return false;
+    } else {
+        backdrop_set_message("Valid Signature");
+        return $decoded_payload;
+    }
 }
