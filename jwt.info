@@ -1,4 +1,5 @@
 name = JWT
 description = Create and verify Jason Web Tokens in Backdrop
-version = BACKDROP_VERSION
+version = 1.0 Beta
 backdrop = 1.x
+type = module
