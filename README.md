@@ -4,7 +4,7 @@ This module adds the ability to create and authenticate JSON Web Tokens through 
 
 ## Installation
 
-- Install this module using the official [Backdrop CMS instructions] (https://backdropcms.org/guide/modules).
+- Install this module using the official [Backdrop CMS instructions](https://backdropcms.org/guide/modules).
 - (optional) Visit the configuration page under Configuration > Administration > Administer JWT Tokens.
 
 ## Usage
