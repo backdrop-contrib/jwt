@@ -163,3 +163,7 @@ function validate_jwt($jwt) {
         return $decoded_payload;
     }
 }
+
+function jwt_decode($jwt) {
+    return validate_jwt($jwt);
+}
