@@ -129,7 +129,7 @@ function _jwt_encode_signature($base64_url_header, $base64_url_payload) {
 }
 
 function validate_jwt($jwt) {
-    if(!$jwt){
+    if (!$jwt) {
         watchdog('JWT', 'JWT Verification Failed: No token passed to validate function.', array(), WATCHDOG_ALERT);
         return false;
     }
@@ -143,7 +143,7 @@ function validate_jwt($jwt) {
     $expiration_time = $decoded_payload->expiration;
 
     // Check expiration time.
-    if( $expiration_time < $current_time ) {
+    if ($expiration_time < $current_time) {
         return false;
     }
 
@@ -155,7 +155,7 @@ function validate_jwt($jwt) {
     // Verify Signature.
     $valid_signature = ( $base64_url_signature === $signature );
 
-    if(!$valid_signature){
+    if (!$valid_signature) {
         return false;
     } else {
         return $decoded_payload;
