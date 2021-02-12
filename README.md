@@ -27,6 +27,10 @@ https://github.com/jsitter/jwt/wiki
 
 Bug and feature requests can be reported in the Issue Queue at https://github.com/jsitter/jwt/issues.
 
+## Current Maintainers
+
+- [Justin Sitter](https://github.com/jsitter)
+
 ## Credits
 
 - Created by Justin Sitter
