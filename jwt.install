@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @file
+ * Generate initial secret on JWT module installation.
+ */
+
+/**
+ * Implements hook_install().
+ */
 function jwt_install() {
   generate_secret();
 }
