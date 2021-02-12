@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Implements hook_permissions
+ */
 function jwt_permission() {
     return array(
         'administer_jwt' => array(
@@ -65,7 +68,7 @@ function jwt_configuration_form($form, &$form_state) {
 }
 
 /** 
- * JWT Form Submit Handler
+ * JWT Admin Page Form Submit Handler
  */
 function jwt_configuration_form_submit($form, &$form_state) {
     $timeout = $form_state['values']['default_timeout'];
@@ -81,6 +84,9 @@ function jwt_configuration_form_submit($form, &$form_state) {
     }
 }
 
+/**
+ * Helper function to replace problematic characters
+ */
 function _jwt_base64_url_encode($text) {
     return str_replace(
         ['+', '/', '='],
@@ -130,7 +136,7 @@ function _jwt_encode_signature($base64_url_header, $base64_url_payload) {
 
 function validate_jwt($jwt) {
     if (!$jwt) {
-        watchdog('JWT', 'JWT Verification Failed: No token passed to validate function.', array(), WATCHDOG_ALERT);
+        watchdog('JWT', 'JWT Verification Failed: No JWT token provided.', array(), WATCHDOG_ALERT);
         return false;
     }
 
