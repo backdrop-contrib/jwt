@@ -1,12 +1,11 @@
 <?php
 
 function jwt_install() {
-    generate_secret();
+  generate_secret();
 }
 
 function generate_secret() {
-    $secret = bin2hex(random_bytes(32));
-    state_set("jwt secret", $secret);
-    state_set('jwt timeout', '3600');
-    dpm($secret, "jwt");
+  $secret = bin2hex(random_bytes(32));
+  state_set("jwt secret", $secret);
+  state_set('jwt timeout', '3600');
 }
