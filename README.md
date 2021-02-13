@@ -18,6 +18,8 @@ This module provides global functions that create and verify Jason Web Tokens.
 
 * `decode_jwt($jwt (string))` -- Returns false if JWT is invalid or expired, otherwise returns the decoded payload object.
 
+* `decode_jwt_header($jwt (string), $verify_header (Boolean -- Optional))` -- Returns decoded JWT header object. Optionally pass in `true` for the second parameter to also validate authenticity of token.
+
 ## Documentation
 
 Additional documentation is located in the Wiki:
