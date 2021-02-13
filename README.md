@@ -12,7 +12,7 @@ This module adds the ability to create and authenticate JSON Web Tokens through 
 
 This module provides global functions that create and verify Jason Web Tokens.
 
-* `encode_jwt($payload_data (associative array), $expiration_in_seconds (optional))` -- Accepts associative array of key, value pairs ($payload_data) and returns encoded JWT as a string. Default expiration time is set on the settings page or can be specified with a second argument. Example: encode_jwt(['user'=>'1234', 'role'=>'admin'])
+* `encode_jwt($payload_data (associative array), $expiration_in_seconds (string -- Optional))` -- Accepts associative array of key, value pairs ($payload_data) and returns encoded JWT as a string. Default expiration time is set on the settings page or can be specified with a second argument. Example: encode_jwt(['user'=>'1234', 'role'=>'admin'])
 
 * `validate_jwt($jwt (string))` -- Returns false if JWT string is invalid or expired, otherwise returns the decoded payload as an object.
 
