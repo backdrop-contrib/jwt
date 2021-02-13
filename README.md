@@ -27,7 +27,7 @@ https://github.com/jsitter/jwt/wiki
 
 ## Issues
 
-Bug and feature requests can be reported in the Issue Queue at https://github.com/jsitter/jwt/issues.
+Bug and feature requests can be reported in the Issue Queue at https://github.com/backdrop-contrib/jwt/issues.
 
 ## Current Maintainers
 
