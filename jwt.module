@@ -203,6 +203,20 @@ function validate_jwt($jwt) {
  * @return mixed
  *   Returns either false for invalid JWTs or Object with JWT payload as keys->values.
  */
-function jwt_decode($jwt) {
+function decode_jwt($jwt) {
   return validate_jwt($jwt);
+}
+
+/**
+ * Public function to decode JWT header.
+ * 
+ * @param string $jwt JWT string.
+ * 
+ * @return Object
+ * Returns Object with key->value pairs
+ */
+function decode_jwt_header($jwt, $validate=false) {
+  $token_parts = explode('.', $jwt);
+  $header = base64_decode($token_parts[0]);
+  return json_decode($header);
 }
