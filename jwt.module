@@ -1,7 +1,12 @@
 <?php
 
 /**
- * Implements hook_permissions
+ * @file
+ * Module file for JWT module.
+ */
+
+/**
+ * Implements hook_permission().
  */
 function jwt_permission() {
   return array(
@@ -12,7 +17,8 @@ function jwt_permission() {
 }
 
 /**
- * Implements hook_menu()
+ * Implements hook_menu().
+ * Provides admin page to configure JWT settings.
  */
 function jwt_menu() {
   $items = array();
@@ -27,11 +33,11 @@ function jwt_menu() {
 }
 
 /**
- * Implements hook_form
- * JWT Admin Page
+ * Implements hook_form().
+ * JWT Admin Page.
  */
 function jwt_configuration_form($form, &$form_state) {
-  $cur_secret = state_get('jwt secret');
+  $jwt_secret = state_get('jwt secret');
   $timeout = state_get('jwt timeout');
 
   $form['#attached']['js'][] = array(
@@ -43,7 +49,7 @@ function jwt_configuration_form($form, &$form_state) {
     '#type' => 'textfield',
     '#size' => '32',
     '#title' => 'Secret Key',
-    '#default_value' => $cur_secret,
+    '#default_value' => $jwt_secret,
     '#maxlength' => '1024',
   );
 
@@ -67,8 +73,9 @@ function jwt_configuration_form($form, &$form_state) {
   return $form;
 }
 
-/** 
- * JWT Admin Page Form Submit Handler
+/**
+ * Implements hook_form_submit().
+ * JWT admin page form submit handler.
  */
 function jwt_configuration_form_submit($form, &$form_state) {
   $timeout = $form_state['values']['default_timeout'];
@@ -85,7 +92,7 @@ function jwt_configuration_form_submit($form, &$form_state) {
 }
 
 /**
- * Helper function to replace problematic characters
+ * Helper function to convert encoded JSON to web safe string.
  */
 function _jwt_base64_url_encode($text) {
   return str_replace(
@@ -95,6 +102,14 @@ function _jwt_base64_url_encode($text) {
   );
 }
 
+/**
+ * Public function that allows for the creation of JWTs.
+ * 
+ * @param array $payload_data Associative array to encode as JWT payload.
+ * @param string|int $expiration OPTIONAL argument to specify timeout in seconds.
+ * 
+ * @return string A signed JWT string.
+ */
 function encode_jwt($payload_data, $expiration=false) {
   $current_time = time();
   $expiration = $expiration ? (int) $expiration : (int) state_get('jwt timeout');
@@ -124,16 +139,28 @@ function encode_jwt($payload_data, $expiration=false) {
   return $jwt;
 }
 
+/**
+ * Helper function to sign encoded JSON header and payload.
+ */
 function _jwt_encode_signature($base64_url_header, $base64_url_payload) {
   $secret_key = state_get('jwt secret');
 
   // Create Signature.
   $signature = hash_hmac('sha256', $base64_url_header . '.' . $base64_url_payload, $secret_key, true);
 
-  // Encode Signature to Base64Url String.
+  // Encode Signature.
   return _jwt_base64_url_encode($signature);
 }
 
+
+/**
+ * Public function that verifies JWT authenticity.
+ * 
+ * @param string $jwt JWT string.
+ * 
+ * @return mixed
+ *   Returns either false for invalid JWTs or Object with JWT payload as keys->values.
+ */
 function validate_jwt($jwt) {
   if (!$jwt) {
     watchdog('JWT', 'JWT Verification Failed: No JWT token provided.', array(), WATCHDOG_ALERT);
@@ -168,6 +195,14 @@ function validate_jwt($jwt) {
   }
 }
 
+/**
+ * Public function that decodes authentic JWTs.
+ * 
+ * @param string $jwt JWT string.
+ * 
+ * @return mixed
+ *   Returns either false for invalid JWTs or Object with JWT payload as keys->values.
+ */
 function jwt_decode($jwt) {
   return validate_jwt($jwt);
 }
