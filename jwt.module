@@ -84,7 +84,7 @@ function jwt_configuration_form_submit($form, &$form_state) {
   try{
     $secret = $form_state['values']['jwt_secret'];
     state_set('jwt secret', $secret);
-    backdrop_set_message(t('Successfully set JWT secret.'), 'status');
+    backdrop_set_message(t('Successfully set JWT secret key.'), 'status');
   } catch( exception $e ) {
     backdrop_set_message(t('Could not set jwt secret: '.$e->getMessage()), 'error');
     watchdog('jwt', $e, array(), WATCHDOG_ERROR);
