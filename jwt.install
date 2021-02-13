@@ -9,7 +9,12 @@
  * Implements hook_install().
  */
 function jwt_install() {
-  generate_secret();
+  try {
+    generate_secret();
+  } catch (exception $e) {
+    backdrop_set_message(t('JWT Could not generate secret key. Go to Configuration > Administration > Administer JWT Tokens to set the key.'), 'error');
+  }
+  
 }
 
 function generate_secret() {
