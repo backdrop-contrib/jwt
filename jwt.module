@@ -106,7 +106,7 @@ function _jwt_base64_url_encode($text) {
  * Public function that allows for the creation of JWTs.
  * 
  * @param array $payload_data Associative array to encode as JWT payload.
- * @param string|int $expiration OPTIONAL argument to specify timeout in seconds.
+ * @param string|int $expiration (Optional) argument to specify timeout in seconds.
  * 
  * @return string A signed JWT string.
  */
@@ -219,8 +219,10 @@ function decode_jwt($jwt) {
  * 
  * @param string $jwt JWT string.
  * 
+ * @param bool $validate (Optional) Verify authenticity of header.
+ * 
  * @return Object
- * Returns Object with key->value pairs
+ * Returns Object with key->value pairs.
  */
 function decode_jwt_header($jwt, $validate=false) {
   if($validate && !validate_jwt($jwt)) {
