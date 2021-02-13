@@ -169,6 +169,13 @@ function validate_jwt($jwt) {
 
   $current_time = time();
   $token_parts = explode('.', $jwt);
+  $length = count($token_parts);
+
+  if($length < 3 || $length > 3) {
+      watchdog('JWT', 'JWT Validation Failed: Invalid format.', array(), WATCHDOG_ALERT);
+      return false;
+  }
+
   $header = base64_decode($token_parts[0]);
   $payload = base64_decode($token_parts[1]);
   $decoded_payload = json_decode($payload);
@@ -216,7 +223,18 @@ function decode_jwt($jwt) {
  * Returns Object with key->value pairs
  */
 function decode_jwt_header($jwt, $validate=false) {
+  if($validate && !validate_jwt($jwt)) {
+   return false;
+  }
+
   $token_parts = explode('.', $jwt);
+  $length = count($token_parts);
+
+  if($length < 3 || $length > 3) {
+    watchdog('JWT', 'JWT Validation Failed: Invalid format.', array(), WATCHDOG_ALERT);
+    return false;
+  }
+
   $header = base64_decode($token_parts[0]);
   return json_decode($header);
 }
