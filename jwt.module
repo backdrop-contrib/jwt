@@ -56,7 +56,7 @@ function jwt_configuration_form($form, &$form_state) {
   $form['generate_secret'] = array(
     '#type' => 'button',
     '#value' => 'Generate Secret Key',
-    '#attributes' => array('onclick' => 'testAlert();return false'),
+    '#attributes' => array('onclick' => 'generateSecret();return false'),
   );
 
   $form['default_timeout'] = array(
