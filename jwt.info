@@ -1,4 +1,4 @@
 name = JWT
-description = Create and verify Jason Web Tokens in Backdrop
+description = Create and verify JSON Web Tokens in Backdrop
 backdrop = 1.x
 type = module
