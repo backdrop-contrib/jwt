@@ -245,8 +245,8 @@ function decode_jwt($jwt, $validate=true, $secret=false) {
  * @return Object
  * Returns Object with key->value pairs.
  */
-function decode_jwt_header($jwt, $validate=false) {
-  if($validate && !validate_jwt($jwt)) {
+function decode_jwt_header($jwt, $validate=false, $secret=false) {
+  if($validate && !validate_jwt($jwt, $secret)) {
    return false;
   }
 
