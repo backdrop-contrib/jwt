@@ -147,13 +147,9 @@ function encode_jwt($payload_data, $expiration=false, $secret=false) {
 function _jwt_encode_signature($base64_url_header, $base64_url_payload, $secret=false) {
   
   if(!$secret) {
-    dpm("No secret specified");
     $secret = state_get('jwt secret');
   }else {
-    dpm("Secret Specified");
   }
-
-  dpm($secret);
   
   // Create Signature.
   $signature = hash_hmac('sha256', $base64_url_header . '.' . $base64_url_payload, $secret, true);
