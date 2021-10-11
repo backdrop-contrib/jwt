@@ -29,6 +29,8 @@ function jwt_menu() {
     'page arguments'   => array('jwt_configuration_form'),
     'access arguments' =>  array('administer_jwt'),
   );
+
+  return $items;
 }
 
 /**
