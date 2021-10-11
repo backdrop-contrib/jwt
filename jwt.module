@@ -23,13 +23,12 @@ function jwt_permission() {
 function jwt_menu() {
   $items = array();
   $items['admin/config/administration/jwt'] = array(
-    'title' => 'Administer JWT Tokens',
-    'description' => 'Page to set up and administer site-wide JWT tokens',
-    'page callback' => 'backdrop_get_form',
-    'page arguments' => array('jwt_configuration_form'),
+    'title'            => 'Administer JWT Tokens',
+    'description'      => 'Page to set up and administer site-wide JWT tokens',
+    'page callback'    => 'backdrop_get_form',
+    'page arguments'   => array('jwt_configuration_form'),
     'access arguments' =>  array('administer_jwt'),
   );
-  return $items;
 }
 
 /**
@@ -46,28 +45,28 @@ function jwt_configuration_form($form, &$form_state) {
   );
 
   $form['jwt_secret'] = array(
-    '#type' => 'textfield',
-    '#size' => '32',
-    '#title' => 'Secret Key',
+    '#type'          => 'textfield',
+    '#size'          => '32',
+    '#title'         => 'Secret Key',
     '#default_value' => $jwt_secret,
-    '#maxlength' => '1024',
+    '#maxlength'     => '1024',
   );
 
   $form['generate_secret'] = array(
-    '#type' => 'button',
-    '#value' => 'Generate Secret Key',
+    '#type'       => 'button',
+    '#value'      => 'Generate Secret Key',
     '#attributes' => array('onclick' => 'generateSecret();return false'),
   );
 
   $form['default_timeout'] = array(
-    '#type' => 'textfield',
-    '#size' => '32',
+    '#type'          => 'textfield',
+    '#size'          => '32',
     '#default_value' => $timeout,
-    '#title' => 'Default Timeout (in seconds)',
+    '#title'         => 'Default Timeout (in seconds)',
   );
 
   $form['submit'] = array(
-    '#type' => 'submit',
+    '#type'  => 'submit',
     '#value' => 'Save',
   );
   return $form;
@@ -110,7 +109,7 @@ function _jwt_base64_url_encode($text) {
  * 
  * @return string A signed JWT string.
  */
-function encode_jwt($payload_data, $expiration=false) {
+function encode_jwt($payload_data, $expiration=false, $secret=false) {
   $current_time = time();
   $expiration = $expiration ? (int) $expiration : (int) state_get('jwt timeout');
   $payload_data['expiration'] = $current_time + $expiration;
@@ -144,12 +143,38 @@ function encode_jwt($payload_data, $expiration=false) {
  */
 function _jwt_encode_signature($base64_url_header, $base64_url_payload) {
   $secret_key = state_get('jwt secret');
-
+  
   // Create Signature.
   $signature = hash_hmac('sha256', $base64_url_header . '.' . $base64_url_payload, $secret_key, true);
 
   // Encode Signature.
   return _jwt_base64_url_encode($signature);
+}
+
+/**
+ * Helper function to decode JWT without validation.
+ */
+function _jwt_decode($jwt) {
+  if (!$jwt) {
+    watchdog('JWT', 'JWT Verification Failed: No JWT token provided.', array(), WATCHDOG_ALERT);
+    return false;
+  }
+
+  $current_time = time();
+  $token_parts  = explode('.', $jwt);
+  $length       = count($token_parts);
+
+  if($length < 3 || $length > 3) {
+      watchdog('JWT', 'JWT Validation Failed: Invalid format.', array(), WATCHDOG_ALERT);
+      return false;
+  }
+
+  $decoded_jwt = array();
+  $decoded_jwt['header']          = base64_decode($token_parts[0]);
+  $decoded_jwt['base64_payload']  = base64_decode($token_parts[1]);
+  $decoded_jwt['signature']       = $token_parts[2];
+  $decoded_jwt['expiration']      = $decoded_jwt['payload']->expiration;
+  return $decoded_jwt;
 }
 
 
@@ -162,43 +187,25 @@ function _jwt_encode_signature($base64_url_header, $base64_url_payload) {
  *   Returns either false for invalid JWTs or Object with JWT payload as keys->values.
  */
 function validate_jwt($jwt) {
-  if (!$jwt) {
-    watchdog('JWT', 'JWT Verification Failed: No JWT token provided.', array(), WATCHDOG_ALERT);
-    return false;
-  }
-
-  $current_time = time();
-  $token_parts = explode('.', $jwt);
-  $length = count($token_parts);
-
-  if($length < 3 || $length > 3) {
-      watchdog('JWT', 'JWT Validation Failed: Invalid format.', array(), WATCHDOG_ALERT);
-      return false;
-  }
-
-  $header = base64_decode($token_parts[0]);
-  $payload = base64_decode($token_parts[1]);
-  $decoded_payload = json_decode($payload);
-  $signature = $token_parts[2];
-  $expiration_time = $decoded_payload->expiration;
+  $decoded_jwt = _jwt_decode($jwt);
 
   // Check expiration time.
-  if ($expiration_time < $current_time) {
+  if ($decoded_jwt['expiration'] < $current_time) {
     return false;
   }
 
   // Build Signature.
-  $base64_url_header = _jwt_base64_url_encode($header);
-  $base64_url_payload = _jwt_base64_url_encode($payload);
+  $base64_url_header    = _jwt_base64_url_encode($decoded_jwt['header']);
+  $base64_url_payload   = _jwt_base64_url_encode($decoded_jwt['base64_payload']);
   $base64_url_signature = _jwt_encode_signature($base64_url_header, $base64_url_payload);
 
   // Verify Signature.
-  $valid_signature = ( $base64_url_signature === $signature );
+  $valid_signature = ( $base64_url_signature === $decoded_jwt['signature'] );
 
   if (!$valid_signature) {
     return false;
   } else {
-    return $decoded_payload;
+    return json_decode($decoded_jwt['base64_payload']);
   }
 }
 
