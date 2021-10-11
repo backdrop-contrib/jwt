@@ -108,6 +108,7 @@ function _jwt_base64_url_encode($text) {
  * 
  * @param array $payload_data Associative array to encode as JWT payload.
  * @param string|int $expiration (Optional) argument to specify timeout in seconds.
+ * @param string $secret (Optional) Specify secret to encode JWT with.
  * 
  * @return string A signed JWT string.
  */
@@ -132,7 +133,7 @@ function encode_jwt($payload_data, $expiration=false, $secret=false) {
   $base64_url_payload = _jwt_base64_url_encode($payload);
 
   // Encode Signature.
-  $base64_url_signature = _jwt_encode_signature($base64_url_header, $base64_url_payload);
+  $base64_url_signature = _jwt_encode_signature($base64_url_header, $base64_url_payload, $secret);
 
   // Create JWT.
   $jwt = $base64_url_header . '.' . $base64_url_payload . '.' . $base64_url_signature;
@@ -143,11 +144,15 @@ function encode_jwt($payload_data, $expiration=false, $secret=false) {
 /**
  * Helper function to sign encoded JSON header and payload.
  */
-function _jwt_encode_signature($base64_url_header, $base64_url_payload) {
-  $secret_key = state_get('jwt secret');
+function _jwt_encode_signature($base64_url_header, $base64_url_payload, $secret=false) {
+  
+  if(!$secret) {
+    $secret = state_get('jwt secret');
+  }else {
+  }
   
   // Create Signature.
-  $signature = hash_hmac('sha256', $base64_url_header . '.' . $base64_url_payload, $secret_key, true);
+  $signature = hash_hmac('sha256', $base64_url_header . '.' . $base64_url_payload, $secret, true);
 
   // Encode Signature.
   return _jwt_base64_url_encode($signature);
@@ -184,11 +189,12 @@ function _jwt_decode($jwt) {
  * Public function that verifies JWT authenticity.
  * 
  * @param string $jwt JWT string.
+ * @param boolean $secret (Optional) Specify secret to verify token with.
  * 
  * @return mixed
  *   Returns either false for invalid JWTs or Object with JWT payload as keys->values.
  */
-function validate_jwt($jwt) {
+function validate_jwt($jwt, $secret=false) {
   $decoded_jwt = _jwt_decode($jwt);
 
   // Check expiration time.
@@ -199,7 +205,7 @@ function validate_jwt($jwt) {
   // Build Signature.
   $base64_url_header    = _jwt_base64_url_encode($decoded_jwt['header']);
   $base64_url_payload   = _jwt_base64_url_encode($decoded_jwt['base64_payload']);
-  $base64_url_signature = _jwt_encode_signature($base64_url_header, $base64_url_payload);
+  $base64_url_signature = _jwt_encode_signature($base64_url_header, $base64_url_payload, $secret);
 
   // Verify Signature.
   $valid_signature = ( $base64_url_signature === $decoded_jwt['signature'] );
@@ -215,12 +221,18 @@ function validate_jwt($jwt) {
  * Public function that decodes authentic JWTs.
  * 
  * @param string $jwt JWT string.
+ * @param boolean $validate (Optional) Default value (false) validates jwt.
+ * @param string $secret (Optional) Specify valid secret key.
  * 
  * @return mixed
  *   Returns either false for invalid JWTs or Object with JWT payload as keys->values.
  */
-function decode_jwt($jwt) {
-  return validate_jwt($jwt);
+function decode_jwt($jwt, $validate=true, $secret=false) {
+  if($validate){
+    return validate_jwt($jwt, $secret);
+  } else {
+    return _jwt_decode($jwt);
+  }
 }
 
 /**
